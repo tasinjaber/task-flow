@@ -1,0 +1,12 @@
+import express from "express"; import cors from "cors"; import { z } from "zod"; import { projects, tasks } from "./data.js";
+const app=express(); app.use(cors()); app.use(express.json());
+const status=z.enum(["todo","in-progress","review","done"]); const priority=z.enum(["low","medium","high"]);
+const taskInput=z.object({title:z.string().min(2),projectId:z.string(),assignee:z.string().min(1),status,priority,due:z.string().min(1)});
+app.get("/api/health",(_req,res)=>res.json({status:"ok",service:"task-flow-api"}));
+app.get("/api/projects",(_req,res)=>res.json({data:projects}));
+app.get("/api/tasks",(req,res)=>{const q=String(req.query.q??"").toLowerCase(); const s=req.query.status; const data=tasks.filter(t=>(!q||t.title.toLowerCase().includes(q))&&(!s||t.status===s)); res.json({data});});
+app.post("/api/tasks",(req,res)=>{const parsed=taskInput.safeParse(req.body); if(!parsed.success)return res.status(400).json({error:"Invalid task",details:parsed.error.flatten()}); const task={id:"t-"+Date.now(),...parsed.data}; tasks.unshift(task); res.status(201).json({data:task});});
+app.patch("/api/tasks/:id/status",(req,res)=>{const parsed=status.safeParse(req.body.status); if(!parsed.success)return res.status(400).json({error:"Invalid status"}); const task=tasks.find(t=>t.id===req.params.id); if(!task)return res.status(404).json({error:"Task not found"}); task.status=parsed.data; res.json({data:task});});
+app.use((_req,res)=>res.status(404).json({error:"Route not found"}));
+if(process.env.NODE_ENV!=="test") app.listen(4000,()=>console.log("Task Flow API running on http://localhost:4000"));
+export default app;
