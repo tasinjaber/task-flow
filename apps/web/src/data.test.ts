@@ -1,0 +1,2 @@
+import { describe, expect, it } from "vitest"; import { projects, tasks } from "./data";
+describe("task flow seed data",()=>{it("contains project and task records",()=>{expect(projects.length).toBeGreaterThan(0);expect(tasks.length).toBeGreaterThan(0)});it("uses valid task statuses",()=>{expect(tasks.every(t=>["todo","in-progress","review","done"].includes(t.status))).toBe(true)});});
