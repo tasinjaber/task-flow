@@ -1,0 +1,2 @@
+import { describe, expect, it } from "vitest"; import { projects, tasks } from "./data.js";
+describe("task flow api domain",()=>{it("has seeded projects",()=>expect(projects.length).toBe(3));it("has unique task ids",()=>{const ids=tasks.map(t=>t.id);expect(new Set(ids).size).toBe(ids.length)});});
